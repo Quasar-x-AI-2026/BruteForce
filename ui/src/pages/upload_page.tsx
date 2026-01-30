@@ -71,7 +71,7 @@ export default function UploadPage() {
   }, [jobId, navigate])
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#f7f3f0]">
+    <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-sm p-6">
 
         

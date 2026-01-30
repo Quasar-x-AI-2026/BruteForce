@@ -4,118 +4,163 @@
 
 @layer base {
   :root {
-    --bg: #fdfaf7;
-    --card: #ffffff;
-    --primary: #b87c5c;
-    --primary-dark: #8b5a41;
-    --text-main: #2d1f18;
-    --text-muted: #7a6357;
-    --border-soft: rgba(184, 124, 92, 0.1);
+    /* Deepest Dark AI Palette */
+    --bg: #0a0908; 
+    --card: rgba(18, 16, 15, 0.9);
+    --primary: #d4a373; /* Golden Earth Tone */
+    --primary-glow: rgba(212, 163, 115, 0.3);
+    --accent: #b87c5c;
+    --text-main: #fdfaf7;
+    --text-muted: #8a7e75;
+    --border-glass: rgba(255, 255, 255, 0.05);
+    --neural-line: rgba(184, 124, 92, 0.12);
+  }
+
+  body {
+    background-color: var(--bg);
+    /* Neural Grid Overlay - Small dots representing a data field */
+    background-image: 
+      radial-gradient(circle at 1.5px 1.5px, var(--neural-line) 1px, transparent 0);
+    background-size: 32px 32px;
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
 }
 
-
+/* 1. AI GENERATIVE HEADING: Shimmer Animation */
 .heading {
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 36px;
+  font-weight: 900;
   line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   text-align: center;
-  background: linear-gradient(135deg, #4a2f22 0%, #a56d4f 100%);
+  background: linear-gradient(
+    to right, 
+    #fdfaf7 20%, 
+    var(--primary) 40%, 
+    var(--accent) 60%, 
+    #fdfaf7 80%
+  );
+  background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+  animation: shimmer 5s linear infinite;
 }
 
-.subtitle {
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--text-muted);
-  text-align: center;
-  max-width: 90%;
-  margin-left: auto;
-  margin-right: auto;
+@keyframes shimmer {
+  to { background-position: 200% center; }
 }
 
-
+/* 2. THE SMART CARD: Glassmorphism */
 .card {
   background: var(--card);
-  border: 1px solid var(--border-soft);
-  border-radius: 32px;
-  padding: 40px 32px;
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.02),
-    0 20px 40px -12px rgba(74, 47, 34, 0.15);
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-
-.cta-btn {
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--border-glass);
+  border-radius: 28px;
+  padding: 32px;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: white;
-  border-radius: 16px;
-  padding: 14px;
-  font-weight: 700;
+  box-shadow: 
+    0 0 50px -10px rgba(0, 0, 0, 0.5),
+    0 20px 40px -15px rgba(184, 124, 92, 0.1);
+}
+
+/* 3. THE "AI SCANNING" EFFECT: For Image Previews */
+.preview {
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-glass);
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.preview::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(to bottom, transparent, var(--primary), transparent);
+  opacity: 0.15;
+  pointer-events: none;
+  animation: aiscan 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes aiscan {
+  0% { top: -100%; }
+  100% { top: 150%; }
+}
+
+/* 4. SMART CTA BUTTON: Glowing Shadow */
+.cta-btn {
+  background: var(--primary);
+  color: #0a0908;
+  border-radius: 18px;
+  padding: 16px;
+  font-weight: 800;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 16px -4px rgba(184, 124, 92, 0.4);
-}
-
-.cta-btn::after {
-  content: '';
-  position: absolute;
-  top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.25), transparent);
-  transform: rotate(45deg);
-  transition: 0.8s;
-}
-
-.cta-btn:hover::after {
-  left: 120%;
+  box-shadow: 0 8px 25px -5px var(--primary-glow);
 }
 
 .cta-btn:hover {
   transform: translateY(-2px);
   filter: brightness(1.1);
-  box-shadow: 0 12px 24px -6px rgba(184, 124, 92, 0.5);
+  box-shadow: 0 15px 35px -5px var(--primary-glow);
 }
 
-
-.preview {
-  border-radius: 20px;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-soft);
+/* 5. DARK FLOATING BOTTOM NAV: Matching the AI theme */
+.bottom-nav-fixed {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 380px;
+  height: 68px;
+  background: rgba(15, 13, 12, 0.95) !important; /* Forced Dark */
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
 }
 
-.preview:hover {
-  background: white;
-  transform: scale(1.02);
-  border-color: var(--primary);
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-muted);
+  transition: color 0.3s ease;
 }
 
-.brand {
+.nav-btn.active {
+  color: var(--primary);
+  text-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* Before/After Slider Handle */
+.slider-handle {
+  width: 36px;
+  height: 36px;
+  background: var(--primary);
+  border: 4px solid #0a0908;
+  border-radius: 50%;
+  box-shadow: 0 0 15px var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--primary-dark);
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+  font-weight: bold;
 }

@@ -38,8 +38,8 @@ router.get("/google/callback", async (req, res) => {
 
   res.cookie("user", JSON.stringify(user), {
   httpOnly: true,
-  sameSite: "none",
-  secure: false // localhost only
+  sameSite: "lax",   
+  secure: false      
 })
 
 

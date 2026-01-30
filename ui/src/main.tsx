@@ -4,8 +4,8 @@ import { BrowserRouter } from "react-router-dom"
 import App from "./app"
 import { AuthProvider } from "./auth/authcontext"
 import "./index.css"
-import "./loginpage.css"
-
+//import "./loginpage.css"
+//import "./uploadpage.css"
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
