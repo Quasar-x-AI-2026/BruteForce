@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
@@ -5,11 +6,9 @@ export default function UploadPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
 
-  const [jobId, setJobId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
 
-  
   function handleUploadClick() {
     fileInputRef.current?.click()
   }
@@ -19,30 +18,48 @@ export default function UploadPage() {
     if (!file) return
 
     setUploading(true)
+    setProgress(5)
 
     const formData = new FormData()
     formData.append("file", file)
 
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-      credentials: "include"
-    })
+    try {
+      const res = await fetch("http://localhost:8000/enhance", {
+        method: "POST",
+        body: formData
+      })
 
-    const data = await res.json()
-    setJobId(data.jobId)
+      if (!res.ok) {
+        throw new Error("Enhance failed")
+      }
+
+      const data = await res.json()
+
+      setProgress(92)
+
+      navigate("/result", {
+        state: {
+          image: data.image,
+          title: data.title,
+          description: data.description,
+          price: data.price
+        }
+      })
+    } catch {
+      alert("Upload failed. Please try again.")
+      setUploading(false)
+      setProgress(0)
+    }
   }
 
-
-  
   useEffect(() => {
     if (!uploading) return
 
-    let current = 0
+    let current = 5
     const interval = setInterval(() => {
-      current += Math.floor(Math.random() * 10) + 2
-      if (current >= 100) {
-        current = 100
+      current += Math.floor(Math.random() * 8) + 3
+      if (current >= 90) {
+        current = 90
         clearInterval(interval)
       }
       setProgress(current)
@@ -51,50 +68,31 @@ export default function UploadPage() {
     return () => clearInterval(interval)
   }, [uploading])
 
-
-  useEffect(() => {
-    if (!jobId) return
-
-    const poll = setInterval(async () => {
-      const res = await fetch(`/api/result/${jobId}`, {
-        credentials: "include"
-      })
-      const data = await res.json()
-
-      if (data.status === "done") {
-        clearInterval(poll)
-        navigate(`/result?jobId=${jobId}`)
-      }
-    }, 1500)
-
-    return () => clearInterval(poll)
-  }, [jobId, navigate])
-
   return (
-    <div className="min-h-screen flex justify-center">
-      <div className="w-full max-w-sm p-6">
+    <div className="min-h-screen flex items-center justify-center px-4">
 
-        
-        <div className="text-center mb-6">
-          <h1 className="text-xl font-bold text-[#a67c52]">🤲 Krafti</h1>
+      <div className="card w-full max-w-sm min-h-[90vh] flex flex-col">
+
+        {/* BRAND */}
+        <div className="brand mb-6">
+          <span className="brand-icon"><img src="/images/letter-k.ico" className="brand-logo" alt="brand logo" /></span>
+          <span>Krafti</span>
         </div>
 
-      
+        {/* UPLOAD STATE */}
         {!uploading && (
           <>
-            <h2 className="text-xl font-semibold text-[#3e2723] mb-2">
-              Upload a photo of your craft
-            </h2>
-            <p className="text-sm text-[#6d4c41] mb-6">
-              AI will turn your photo into a beautiful product listing.
+            <h1 className="heading">
+              Upload Your Craft
+            </h1>
+
+            <p className="subtitle mt-3">
+              Turn a simple photo into a professional product listing
             </p>
 
             <div
               onClick={handleUploadClick}
-              className="border-2 border-dashed border-[#d7ccc8]
-                         bg-white/40 backdrop-blur
-                         rounded-3xl p-10 text-center cursor-pointer
-                         hover:bg-white/60 transition"
+              className="upload-box mt-10"
             >
               <input
                 ref={fileInputRef}
@@ -104,37 +102,46 @@ export default function UploadPage() {
                 onChange={handleFileChange}
               />
 
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full
-                              bg-[#a67c52] text-white flex items-center
-                              justify-center text-2xl">
+              <div className="icon-circle">
                 📷
               </div>
-
-              <h3 className="font-medium">Tap to Upload Photo</h3>
             </div>
+
+            <p className="mt-4 text-sm text-center text-[var(--text-muted)]">
+              Tap to upload a product photo
+            </p>
           </>
         )}
 
-       
+        {/* LOADING STATE */}
         {uploading && (
           <>
-            <h2 className="text-xl font-semibold text-[#3e2723] mb-6">
-              Creating your listing…
-            </h2>
+            <h1 className="heading">
+              Creating Your Listing
+            </h1>
 
-            <div className="flex justify-between text-sm text-[#a67c52] font-semibold mb-2">
-              <span>Analyzing…</span>
-              <span>{progress}%</span>
-            </div>
+            <p className="subtitle mt-3">
+              Enhancing image and generating details
+            </p>
 
-            <div className="w-full h-3 bg-[#e0d7d0] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#a67c52] to-[#d4a373] transition-all"
-                style={{ width: `${progress}%` }}
-              />
+            <div className="mt-12">
+
+              <div className="flex justify-between text-sm font-semibold text-[var(--text-muted)] mb-2">
+                <span>Analyzing…</span>
+                <span>{progress}%</span>
+              </div>
+
+              <div className="w-full h-3 rounded-full overflow-hidden bg-[var(--border-glass)]">
+                <div
+                  className="h-full bg-[var(--primary)] transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+
             </div>
           </>
         )}
+
       </div>
     </div>
   )

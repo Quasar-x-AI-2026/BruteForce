@@ -1,7 +1,7 @@
-import { updateJob } from "../jobs/jobstore"
+
+import { updateJob } from "../jobs/Store"
 
 export function simulateAIProcessing(jobId: string) {
- 
   setTimeout(() => {
     updateJob(jobId, {
       status: "done",

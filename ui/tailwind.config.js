@@ -1,12 +1,33 @@
+
+
+const autoprefixer = require('autoprefixer');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
- content: [
-  "./index.html",
-  "./src/**/*.{js,ts,jsx,tsx}",
-],
+  content: [
+    "./index.html",
+    "./**/*.{js,ts,jsx,tsx}"
+  ],
   theme: {
-    extend: {},
-  },
-  plugins: [],
-}
+    extend: {
+      colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
 
+        card: "var(--card)",
+        "card-foreground": "var(--card-foreground)",
+
+        primary: "var(--primary)",
+        "primary-foreground": "var(--primary-foreground)",
+
+        muted: "var(--muted)",
+        "muted-foreground": "var(--muted-foreground)",
+        fontFamily: {
+         brand: ['Playfair Display', 'serif'],
+      },
+        border: "var(--border)",
+      }
+    }
+  },
+  plugins: []
+};

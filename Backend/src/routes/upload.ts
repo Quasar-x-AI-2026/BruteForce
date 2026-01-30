@@ -1,17 +1,17 @@
-import express from "express"
-import crypto from "crypto"
-import { uploadMiddleware } from "../upload/multer"
-import { requireAuth } from "../middleware/RequireAuth"
-import { createJob } from "../jobs/jobstore"
-import { simulateAIProcessing } from "../ai/simulateProcessing"
 
-const router = express.Router()
+import { Router, Request, Response } from "express"
+import multer from "multer"
+import crypto from "crypto"
+import { callImageAI } from "../services/aiClient"
+import { createJob, completeJob, failJob } from "../services/jobStre"
+
+const router = Router()
+const upload = multer()
 
 router.post(
   "/upload",
-  requireAuth,
-  uploadMiddleware.single("file"),
-  (req, res) => {
+  upload.single("file"),
+  async (req: Request, res: Response) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" })
     }
@@ -19,17 +19,33 @@ router.post(
     const user = JSON.parse(req.cookies.user)
     const jobId = crypto.randomUUID()
 
-    createJob({
-      id: jobId,
-      userId: user.id,
-      originalImagePath: req.file.path,
-      status: "processing"
-    })
+    createJob(jobId, user.id)
 
-
-    simulateAIProcessing(jobId)
-
+    // 🔹 Respond immediately
     res.json({ jobId })
+
+    // 🔹 Background processing
+    ;(async () => {
+      try {
+        const processedImage = await callImageAI(
+          req.file!.buffer,
+          req.file!.originalname
+        )
+
+        const base64 = processedImage.toString("base64")
+
+        completeJob(jobId, {
+          enhancedImageUrl: `data:image/png;base64,${base64}`,
+          title: null,
+          description: null,
+          price: null
+        })
+
+      } catch (err) {
+        console.error("AI job failed:", err)
+        failJob(jobId)
+      }
+    })()
   }
 )
 

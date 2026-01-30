@@ -9,13 +9,16 @@ export default function RequireAuth({
 }) {
   const { user, loading } = useAuth()
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-[#7A5A44]">
-        Checking session…
-      </div>
-    )
-  }
+ if (loading) {
+  return <div>Checking session…</div>
+}
+
+if (!user) {
+  return <Navigate to="/login" />
+}
+
+return children
+
 
   if (!user) {
     return <Navigate to="/login" replace />

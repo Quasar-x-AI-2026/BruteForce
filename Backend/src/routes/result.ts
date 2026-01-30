@@ -1,11 +1,12 @@
+
+
 import express from "express"
 import { requireAuth } from "../middleware/RequireAuth"
-import { getJob } from "../jobs/jobstore"
+import { getJob } from "../services/jobStre"
 
 const router = express.Router()
 
 router.get("/result/:jobId", requireAuth, (req, res) => {
-  
   const user = JSON.parse(req.cookies.user)
   const jobId = req.params.jobId as string
 

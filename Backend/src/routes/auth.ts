@@ -1,29 +1,26 @@
+
+
 import express from "express"
-import { OAuth2Client } from "google-auth-library"
+import { googleClient } from "../auth/google"
 
 const router = express.Router()
 
-const client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  "http://localhost:3000/api/auth/google/callback"
-)
-
-router.get("/google", (_req, res) => {
-  const url = client.generateAuthUrl({
+router.get("/google", (req, res) => {
+  const url = googleClient.generateAuthUrl({
     access_type: "offline",
     scope: ["profile", "email"]
   })
+
   res.redirect(url)
 })
 
 router.get("/google/callback", async (req, res) => {
   const code = req.query.code as string
 
-  const { tokens } = await client.getToken(code)
-  client.setCredentials(tokens)
+  const { tokens } = await googleClient.getToken(code)
+  googleClient.setCredentials(tokens)
 
-  const ticket = await client.verifyIdToken({
+  const ticket = await googleClient.verifyIdToken({
     idToken: tokens.id_token!,
     audience: process.env.GOOGLE_CLIENT_ID
   })
@@ -33,15 +30,16 @@ router.get("/google/callback", async (req, res) => {
   const user = {
     id: payload?.sub,
     email: payload?.email,
-    name: payload?.name
+    name: payload?.name,
+    picture: payload?.picture
   }
 
+  // TEMP: store user in cookie (later replace with DB + session)
   res.cookie("user", JSON.stringify(user), {
-  httpOnly: true,
-  sameSite: "lax",   
-  secure: false      
-})
-
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false // true in production (HTTPS)
+  })
 
   res.redirect(`${process.env.FRONTEND_URL}/upload`)
 })

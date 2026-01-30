@@ -1,42 +1,40 @@
-import { useEffect, useState } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
 
-type ResultData = {
-  status: string
-  enhancedImageUrl: string | null
-  generatedTitle: string | null
-  generatedDescription: string | null
-  suggestedPrice: string | null
-}
+import { useLocation, useNavigate } from "react-router-dom"
+import { confidenceLabel } from "../utils/priceConfidence"
+import { underpricingHint } from "../utils/underpricingHint"
 
 export default function ResultPage() {
   const navigate = useNavigate()
-  const [params] = useSearchParams()
-  const jobId = params.get("jobId")
+  const { state } = useLocation()
 
-  const [data, setData] = useState<ResultData | null>(null)
+  if (!state) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card text-center max-w-sm w-full">
+          <p className="text-sm text-[var(--text-muted)]">
+            No result found.
+          </p>
+          <button
+            onClick={() => navigate("/upload")}
+            className="cta-btn mt-6"
+          >
+            Upload Product
+          </button>
+        </div>
+      </div>
+    )
+  }
 
-  useEffect(() => {
-    if (!jobId) return
-
-    fetch(`/api/result/${jobId}`, {
-      credentials: "include"
-    })
-      .then(res => res.json())
-      .then(setData)
-  }, [jobId])
-
-  /* ---------- ACTION HANDLERS ---------- */
 
   function handleDownload() {
-    if (!data?.enhancedImageUrl) return
+    if (!state.image) return
 
     const link = document.createElement("a")
-    link.href = data.enhancedImageUrl
+    link.href = state.image
     link.download =
-      `${data.generatedTitle ?? "krafti-product"}.jpg`
+      `${state.title ?? "krafti-product"}`
         .replace(/\s+/g, "-")
-        .toLowerCase()
+        .toLowerCase() + ".jpg"
 
     document.body.appendChild(link)
     link.click()
@@ -44,136 +42,186 @@ export default function ResultPage() {
   }
 
   async function handleShare() {
-    if (!data?.enhancedImageUrl) return
+    if (!state.image) return
+
+    const title = state.title ?? "Krafti Product"
+    const text =
+      Array.isArray(state.description)
+        ? state.description.join(" ")
+        : state.description ?? "Created using Krafti"
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: data.generatedTitle ?? "Krafti Product",
-          text: data.generatedDescription ?? "Created using Krafti",
-          url: data.enhancedImageUrl
+          title,
+          text,
+          url: state.image
         })
       } catch {
-        // user cancelled — do nothing
       }
     } else {
-      await navigator.clipboard.writeText(data.enhancedImageUrl)
+      await navigator.clipboard.writeText(state.image)
       alert("Image link copied to clipboard")
     }
   }
 
-  if (!data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-[#7A5A44]">
-        Preparing your product…
-      </div>
-    )
-  }
 
   return (
-   <div className="min-h-screen bg-[#FAF4EC] px-4 pb-[160px]">
+    <div className="min-h-screen flex items-center justify-center px-4 pb-24">
 
+      <div className="card w-full max-w-sm flex flex-col relative overflow-hidden">
 
-      {/* HEADER */}
-      <div className="pt-6 flex items-center">
+        {/* BACK */}
         <button
           onClick={() => navigate(-1)}
-          className="text-[#7A5A44] text-xl"
+          className="absolute left-4 top-4 text-[var(--text-muted)] text-lg"
         >
           ←
         </button>
-      </div>
-
-      <div className="mt-4 max-w-sm mx-auto space-y-6">
 
         {/* TITLE */}
-        <h1 className="text-lg font-semibold tracking-tight text-[#4A2E1F] text-center">
-          {data.generatedTitle}
+        <h1 className="heading mt-6">
+          {state.title}
         </h1>
 
         {/* IMAGE */}
-        <div className="rounded-3xl overflow-hidden shadow-sm">
+        <div className="preview mt-6 h-72 flex items-center justify-center">
           <img
-            src={data.enhancedImageUrl ?? ""}
-            alt="Enhanced product"
-            className="w-full h-72 object-cover"
+            src={state.image}
+            alt="Enhanced"
+            className="w-full h-full object-contain"
           />
         </div>
 
         {/* DESCRIPTION */}
-        <p className="text-sm leading-relaxed text-[#7A5A44] text-center">
-          {data.generatedDescription}
+        <p className="subtitle mt-5">
+          {Array.isArray(state.description)
+            ? state.description.join(" ")
+            : state.description}
         </p>
 
-        {/* PRICE */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="text-xs text-[#8A6A54]">
+        {/* PRICE BLOCK */}
+        <div className="mt-8 p-5 rounded-2xl border border-[var(--border-glass)] text-center">
+
+          <p className="text-xs text-[var(--text-muted)]">
             Suggested Price
           </p>
-          <p className="mt-1 text-xl font-semibold tracking-tight text-[#4A2E1F]">
-            {data.suggestedPrice}
+
+          <p className="text-2xl font-bold mt-1 text-[var(--text-main)]">
+            {typeof state.price === "string"
+              ? state.price
+              : state.price && typeof state.price === "object"
+                ? `₹${state.price.min} – ₹${state.price.max}`
+                : "—"}
           </p>
-        </div>
 
-        {/* MARKETPLACE READY */}
-        <div className="bg-[#F3E6DA] rounded-2xl p-4 text-sm text-[#7A5A44]">
-          <p className="font-medium text-[#4A2E1F] mb-2">
-            Ready for marketplaces
+          <p className="text-xs text-[var(--text-muted)] mt-1">
+            {confidenceLabel(state.price?.confidence)}
           </p>
-          <ul className="space-y-1">
-            <li>✔️ Amazon</li>
-            <li>✔️ Flipkart</li>
-            <li>✔️ Etsy</li>
-            <li>✔️ eBay</li>
-          </ul>
+
+          <p className="text-xs text-[var(--text-muted)] mt-2">
+            Estimated from material, craftsmanship, and category
+          </p>
+
+          {state.price?.rationale && (
+            <details className="mt-2">
+              <summary className="text-xs cursor-pointer text-[var(--primary)]">
+                Why this price?
+              </summary>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                {state.price.rationale}
+              </p>
+            </details>
+          )}
+
+          {underpricingHint(state.price?.confidence) && (
+            <p className="text-xs text-[var(--accent)] mt-3">
+              {underpricingHint(state.price?.confidence)}
+            </p>
+          )}
         </div>
-      </div>
+{/* MARKETPLACE READY */}
+<div className="mt-8 p-5 rounded-2xl bg-[var(--bg-soft)] border border-[var(--border-glass)]">
+  <p className="text-sm font-medium text-[var(--text-main)] mb-3">
+    Ready for marketplaces
+  </p>
 
-      {/* ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#FAF4EC] border-t border-[#EADFD3] px-4 py-4">
-        <div className="max-w-sm mx-auto space-y-3">
+  <ul className="space-y-2 text-sm">
+    <li className="flex items-center gap-2">
+      <span className="text-[var(--primary)]">✔</span>
+      <a
+        href="https://sellercentral.amazon.in"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:underline"
+      >
+        Amazon Seller Central
+      </a>
+    </li>
 
-         
-          <div className="flex gap-3">
-            <button
-              onClick={handleShare}
-              className="
-                flex-1 flex items-center justify-center gap-2
-                rounded-xl bg-[#F3E6DA]
-                py-3 text-sm font-medium text-[#7A5A44]
-                active:scale-[0.97] transition
-              "
-            >
-              📤 Share
-            </button>
+    <li className="flex items-center gap-2">
+      <span className="text-[var(--primary)]">✔</span>
+      <a
+        href="https://seller.flipkart.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:underline"
+      >
+        Flipkart Seller Hub
+      </a>
+    </li>
 
-            <button
-              onClick={handleDownload}
-              className="
-                flex-1 flex items-center justify-center gap-2
-                rounded-xl bg-[#C07A54]
-                py-3 text-sm font-medium text-white
-                active:scale-[0.97] transition
-              "
-            >
-              ⬇️ Download
-            </button>
-          </div>
+    <li className="flex items-center gap-2">
+      <span className="text-[var(--primary)]">✔</span>
+      <a
+        href="https://www.etsy.com/your/shops/me"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:underline"
+      >
+        Etsy Shop Manager
+      </a>
+    </li>
 
-        
+    <li className="flex items-center gap-2">
+      <span className="text-[var(--primary)]">✔</span>
+      <a
+        href="https://www.ebay.com/sh/ovw"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:underline"
+      >
+        eBay Seller Hub
+      </a>
+    </li>
+  </ul>
+</div>
+
+        {/* ACTION BUTTONS */}
+        <div className="mt-6 flex gap-3">
           <button
-            onClick={() => navigate("/upload")}
-            className="
-              w-full flex items-center justify-center gap-2
-              rounded-xl bg-white
-              py-3 text-sm font-medium text-[#4A2E1F]
-              shadow-sm active:scale-[0.97] transition
-            "
+            onClick={handleShare}
+            className="cta-btn-secondary flex-1"
           >
-            ➕ Upload Another Product
+            📤 Share
           </button>
 
+          <button
+            onClick={handleDownload}
+            className="cta-btn flex-1"
+          >
+            ⬇️ Download
+          </button>
         </div>
+
+        {/* CTA */}
+        <button
+          onClick={() => navigate("/upload")}
+          className="cta-btn mt-6"
+        >
+          Upload Another Product
+        </button>
+
       </div>
     </div>
   )

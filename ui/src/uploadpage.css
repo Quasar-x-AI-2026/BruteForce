@@ -15,13 +15,11 @@
   body {
     background-color: var(--bg) !important;
     color: var(--text-main);
-    /* Neural Grid Texture */
     background-image: radial-gradient(circle at 1.5px 1.5px, rgba(184, 124, 92, 0.1) 1px, transparent 0);
     background-size: 32px 32px;
   }
 }
 
-/* The Glassmorphic Container */
 .card {
   background: var(--card) !important;
   backdrop-filter: blur(25px);
@@ -31,7 +29,6 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* AI Glowing Text */
 .heading {
   font-size: 28px;
   font-weight: 900;
@@ -42,7 +39,6 @@
   color: transparent;
 }
 
-/* The Animated Upload Box */
 .upload-zone {
   position: relative;
   background: rgba(0, 0, 0, 0.3);
@@ -57,7 +53,6 @@
   background: rgba(212, 163, 115, 0.05);
 }
 
-/* AI Scanning Beam */
 .upload-zone::after {
   content: '';
   position: absolute;
