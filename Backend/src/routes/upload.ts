@@ -71,36 +71,32 @@ router.post(
   "/upload",
   upload.single("file"),
   async (req: MulterRequest, res: Response) => {
-    if (!req.file) {
+
+    const file = req.file
+    const userCookie = req.cookies.user
+
+    if (!file) {
       return res.status(400).json({ error: "No file uploaded" })
     }
 
-   const file = req.file
-const userCookie = req.cookies.user
+    if (!userCookie) {
+      return res.status(401).json({ error: "Not authenticated" })
+    }
 
-if (!file) {
-  return res.status(400).json({ error: "No file uploaded" })
-}
-
-if (!userCookie) {
-  return res.status(401).json({ error: "Not authenticated" })
-}
-
-
-    const user = JSON.parse(req.cookies.user)
+    const user = JSON.parse(userCookie)
     const jobId = crypto.randomUUID()
 
     createJob(jobId, user.id)
 
-    // 🔹 Respond immediately
+    // Respond immediately
     res.json({ jobId })
 
-    // 🔹 Background processing
+    // Background processing
     ;(async () => {
       try {
         const processedImage = await callImageAI(
-          req.file.buffer,
-          req.file.originalname
+          file.buffer,
+          file.originalname
         )
 
         const base64 = processedImage.toString("base64")
@@ -111,6 +107,7 @@ if (!userCookie) {
           description: null,
           price: null
         })
+
       } catch (err) {
         console.error("AI job failed:", err)
         failJob(jobId)
