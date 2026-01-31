@@ -2,7 +2,7 @@
 
 export default function LoginPage() {
   const handleGoogleLogin = () => {
-    window.location.href = "/api/auth/google"
+    window.location.href = "https://bruteforce-v161.onrender.com/api/auth/google"
   }
 
   return (
