@@ -75,9 +75,17 @@ router.post(
       return res.status(400).json({ error: "No file uploaded" })
     }
 
-    if (!req.cookies.user) {
-      return res.status(401).json({ error: "Not authenticated" })
-    }
+   const file = req.file
+const userCookie = req.cookies.user
+
+if (!file) {
+  return res.status(400).json({ error: "No file uploaded" })
+}
+
+if (!userCookie) {
+  return res.status(401).json({ error: "Not authenticated" })
+}
+
 
     const user = JSON.parse(req.cookies.user)
     const jobId = crypto.randomUUID()
