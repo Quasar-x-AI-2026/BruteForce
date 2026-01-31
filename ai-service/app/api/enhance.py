@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.post("/enhance")
-async def enhance(file: UploadFile = File(...)):
+def enhance(file: UploadFile = File(...)):
     from app.services.background import remove_background
     from app.services.enhancement import enhance_image
     from app.services.description import generate_product_text
