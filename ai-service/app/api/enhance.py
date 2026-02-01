@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.post("/enhance")
-def enhance(file: UploadFile = File(...)):
+async def enhance(file: UploadFile = File(...)):
     from app.services.background import remove_background
     from app.services.enhancement import enhance_image
     from app.services.description import generate_product_text
@@ -14,7 +14,7 @@ def enhance(file: UploadFile = File(...)):
     from app.services.pixelcut_bg import try_pixelcut_background
     from app.utils.image import pil_to_base64
 
-    image_bytes = file.file.read()
+    image_bytes = await file.read()
 
     image = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
 
